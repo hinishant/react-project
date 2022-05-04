@@ -1,0 +1,20 @@
+# Install the base operating system image
+FROM node:lts-alpine3.14 as builder
+
+# Install nodejs and other packages on  the server
+WORKDIR /home/node/app
+
+# Copy package json and install node modules
+COPY ./package.json ./
+COPY ./package-lock.json ./
+RUN npm install
+
+# Now copy actual application (From here on after cache will be busted)
+COPY ./ ./
+
+# Start command
+RUN npm run build
+
+
+FROM nginx
+COPY --from=builder /home/node/app/build /usr/share/nginx/html
